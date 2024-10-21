@@ -1,0 +1,65 @@
+from scapy.all import *
+import socket
+
+def packet_handler(packet):
+    # Check if the packet has an IP layer
+    if IP in packet:
+        ip_layer = packet[IP]
+        src_ip = ip_layer.src
+        dst_ip = ip_layer.dst
+
+        print("\nPacket captured:")
+        print(f"Source IP: {src_ip}")
+        print(f"Destination IP: {dst_ip}")
+
+        # Check the protocol and print the respective header details
+        if TCP in packet:
+            print("Protocol: TCP")
+            tcp_layer = packet[TCP]
+            print(f"Source Port: {tcp_layer.sport}")
+            print(f"Destination Port: {tcp_layer.dport}")
+
+            # Calculate and print the payload
+            payload = bytes(packet[TCP].payload)
+            payload_size = len(payload)
+
+            print("Payload: ", end="")
+            if payload_size > 0:
+                print(" ".join(f"{byte:02x}" for byte in payload))
+            else:
+                print("No payload")
+        elif UDP in packet:
+            print("Protocol: UDP")
+            udp_layer = packet[UDP]
+            print(f"Source Port: {udp_layer.sport}")
+            print(f"Destination Port: {udp_layer.dport}")
+
+            # Calculate and print the payload
+            payload = bytes(packet[UDP].payload)
+            payload_size = len(payload)
+
+            print("Payload: ", end="")
+            if payload_size > 0:
+                print(" ".join(f"{byte:02x}" for byte in payload))
+            else:
+                print("No payload")
+        else:
+            print("Protocol: Other")
+
+def main():
+    # Get the list of available network interfaces
+    interfaces = get_if_list()
+    print("Available interfaces:")
+    for interface in interfaces:
+        print(f"- {interface}")
+
+    # Set your desired interface here
+    device = input("Enter the device to capture on: ")
+
+    print(f"Capturing on device: {device}")
+
+    # Start sniffing packets
+    sniff(iface=device, prn=packet_handler, store=0)
+
+if __name__ == "__main__":
+    main()
